@@ -7,14 +7,10 @@
 
 const fs = require('fs');
 const path = require('path');
-const os = require('os');
 
 const PLUGIN_NAME = 'resolve-easing';
 const DIST_PATH = path.join(__dirname, '../dist', PLUGIN_NAME);
-const RESOLVE_PLUGINS_PATH = path.join(
-  os.homedir(),
-  'Library/Application Support/Blackmagic Design/DaVinci Resolve/Workflow Integration Plugins'
-);
+const RESOLVE_PLUGINS_PATH = '/Library/Application Support/Blackmagic Design/DaVinci Resolve/Workflow Integration Plugins';
 const DEPLOY_PATH = path.join(RESOLVE_PLUGINS_PATH, PLUGIN_NAME);
 
 function copyDir(src, dest) {
