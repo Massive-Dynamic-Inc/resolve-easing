@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'">
+  <title>Resolve Easing</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="title">
+        <h1>Easing</h1>
+        <span class="status" id="status">Connecting...</span>
+      </div>
+      <button class="icon-btn" id="refresh-btn" title="Refresh">↻</button>
+    </header>
+
+    <!-- Connection Error -->
+    <div class="error-panel" id="error-panel" style="display: none;">
+      <p id="error-message"></p>
+      <button class="btn btn-small" id="retry-btn">Retry</button>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main" id="main-content">
+      <!-- Tool Selection -->
+      <section class="section">
+        <label class="label">Tool</label>
+        <select class="select" id="tool-select">
+          <option value="">Select a tool...</option>
+        </select>
+      </section>
+
+      <!-- Input Selection -->
+      <section class="section" id="input-section" style="display: none;">
+        <label class="label">Input</label>
+        <select class="select" id="input-select">
+          <option value="">Select an input...</option>
+        </select>
+      </section>
+
+      <!-- Easing Controls -->
+      <section class="section easing-section" id="easing-section" style="display: none;">
+        <!-- Curve Preview -->
+        <div class="preview">
+          <canvas id="curve-canvas" width="200" height="120"></canvas>
+        </div>
+
+        <!-- In/Out Sliders (like Keyframe Wingman) -->
+        <div class="sliders">
+          <div class="slider-group">
+            <label class="slider-label">
+              <span>In</span>
+              <span class="slider-value" id="in-value">50</span>
+            </label>
+            <input type="range" class="slider" id="in-slider" min="1" max="100" value="50">
+          </div>
+
+          <div class="slider-group">
+            <label class="slider-label">
+              <span>Out</span>
+              <span class="slider-value" id="out-value">50</span>
+            </label>
+            <input type="range" class="slider" id="out-slider" min="1" max="100" value="50">
+          </div>
+        </div>
+
+        <!-- Presets -->
+        <div class="presets">
+          <button class="preset-btn" data-in="1" data-out="100" title="Ease Out">⟨</button>
+          <button class="preset-btn" data-in="50" data-out="50" title="Ease In Out">◇</button>
+          <button class="preset-btn" data-in="100" data-out="1" title="Ease In">⟩</button>
+          <button class="preset-btn" data-in="1" data-out="1" title="Linear">—</button>
+        </div>
+
+        <!-- Apply Button -->
+        <button class="btn btn-primary" id="apply-btn">Apply Easing</button>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <span class="comp-name" id="comp-name">—</span>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
