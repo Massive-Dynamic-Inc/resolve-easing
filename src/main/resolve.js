@@ -1,7 +1,11 @@
 /**
  * Resolve API Wrapper
- * Clean interface to DaVinci Resolve's Workflow Integration API
+ * Clean interface for DaVinci Resolve Workflow Integration
  */
+
+'use strict';
+
+const path = require('path');
 
 const PLUGIN_ID = 'com.massive-dynamic.resolve-easing';
 
@@ -9,18 +13,18 @@ let WorkflowIntegration = null;
 let resolveObj = null;
 
 /**
- * Initialize the Resolve connection
+ * Initialize Resolve connection (lazy)
  */
 async function initialize() {
   if (resolveObj) return true;
 
   try {
-    // Load the native module
-    WorkflowIntegration = require('./WorkflowIntegration.node');
+    // Load native module from plugin directory
+    WorkflowIntegration = require(path.join(__dirname, 'WorkflowIntegration.node'));
     
     const success = await WorkflowIntegration.Initialize(PLUGIN_ID);
     if (!success) {
-      console.error('[Resolve] Failed to initialize');
+      console.error('[Resolve] Failed to initialize WorkflowIntegration');
       return false;
     }
 
@@ -30,7 +34,6 @@ async function initialize() {
       return false;
     }
 
-    console.log('[Resolve] Connected');
     return true;
   } catch (e) {
     console.error('[Resolve] Init error:', e.message);
@@ -39,40 +42,58 @@ async function initialize() {
 }
 
 /**
- * Get the current Fusion composition
+ * Get Resolve object (initializes if needed)
  */
-async function getCurrentComp() {
+async function getResolve() {
   if (!resolveObj) {
     const ok = await initialize();
-    if (!ok) return { error: 'Not connected to Resolve' };
+    if (!ok) return null;
+  }
+  return resolveObj;
+}
+
+/**
+ * Get current Fusion composition info
+ * Returns: { comp, name, timeline } or { error, hint }
+ */
+async function getCurrentComp() {
+  const resolve = await getResolve();
+  if (!resolve) {
+    return { error: 'Cannot connect to Resolve' };
   }
 
   try {
-    const pm = await resolveObj.GetProjectManager();
+    const pm = await resolve.GetProjectManager();
     if (!pm) return { error: 'No project manager' };
 
     const project = await pm.GetCurrentProject();
-    if (!project) return { error: 'No project open' };
+    if (!project) return { error: 'No project open', hint: 'Open a project in Resolve' };
 
     const timeline = await project.GetCurrentTimeline();
-    if (!timeline) return { error: 'No timeline open' };
+    if (!timeline) return { error: 'No timeline open', hint: 'Open a timeline' };
+
+    const timelineName = await timeline.GetName();
 
     const item = await timeline.GetCurrentVideoItem();
-    if (!item) return { error: 'No clip under playhead' };
+    if (!item) return { error: 'No clip under playhead', hint: 'Move playhead over a clip' };
 
     const compCount = await item.GetFusionCompCount();
-    if (!compCount || compCount < 1) return { error: 'No Fusion comp on clip' };
+    if (!compCount || compCount < 1) {
+      return { error: 'No Fusion comp on clip', hint: 'Add a Fusion composition' };
+    }
 
     const names = await item.GetFusionCompNameList();
-    if (!names || names.length < 1) return { error: 'No comp names' };
+    if (!names || names.length < 1) {
+      return { error: 'Cannot read comp names' };
+    }
 
     const comp = await item.LoadFusionCompByName(names[0]);
-    if (!comp) return { error: 'Failed to load comp' };
+    if (!comp) return { error: 'Failed to load Fusion comp' };
 
-    return { 
-      comp, 
+    return {
+      comp,
       name: names[0],
-      timeline: timeline.GetName ? await timeline.GetName() : 'Timeline'
+      timeline: timelineName || 'Timeline',
     };
   } catch (e) {
     return { error: e.message };
@@ -80,12 +101,14 @@ async function getCurrentComp() {
 }
 
 /**
- * Get Resolve version info
+ * Get current page
  */
-async function getVersion() {
-  if (!resolveObj) return null;
+async function getCurrentPage() {
+  const resolve = await getResolve();
+  if (!resolve) return null;
+  
   try {
-    return await resolveObj.GetVersionString();
+    return await resolve.GetCurrentPage();
   } catch (e) {
     return null;
   }
@@ -93,7 +116,8 @@ async function getVersion() {
 
 module.exports = {
   initialize,
+  getResolve,
   getCurrentComp,
-  getVersion,
+  getCurrentPage,
   PLUGIN_ID,
 };

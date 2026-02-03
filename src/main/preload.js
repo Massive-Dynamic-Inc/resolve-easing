@@ -1,17 +1,25 @@
 /**
- * Preload Script - Bridge between main and renderer
+ * Preload Script - Context bridge between main and renderer
  */
+
+'use strict';
 
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('api', {
-  // Composition
-  getComp: () => ipcRenderer.invoke('get-comp'),
-  getInputs: (toolName) => ipcRenderer.invoke('get-inputs', toolName),
-  getKeyframes: (toolName, inputName) => ipcRenderer.invoke('get-keyframes', toolName, inputName),
+  // Connection & Composition
+  getCompInfo: () => ipcRenderer.invoke('get-comp-info'),
   
-  // Easing
-  applyEasing: (params) => ipcRenderer.invoke('apply-easing', params),
+  // Tools
+  getAllTools: () => ipcRenderer.invoke('get-all-tools'),
+  getSelectedTools: () => ipcRenderer.invoke('get-selected-tools'),
+  
+  // Inputs
+  getAnimatedInputs: (toolName) => ipcRenderer.invoke('get-animated-inputs', toolName),
+  getAllInputs: (toolName) => ipcRenderer.invoke('get-all-inputs', toolName),
+  
+  // Keyframes
+  getKeyframes: (toolName, inputName) => ipcRenderer.invoke('get-keyframes', toolName, inputName),
   
   // Utility
   refresh: () => ipcRenderer.invoke('refresh'),

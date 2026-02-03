@@ -11,21 +11,29 @@
   <div class="container">
     <!-- Header -->
     <header class="header">
-      <div class="title">
-        <h1>Easing</h1>
-        <span class="status" id="status">Connecting...</span>
+      <h1>Resolve Easing</h1>
+      <div class="status" id="status">
+        <span class="status-dot"></span>
+        <span class="status-text">Connecting...</span>
       </div>
-      <button class="icon-btn" id="refresh-btn" title="Refresh">↻</button>
     </header>
 
-    <!-- Connection Error -->
-    <div class="error-panel" id="error-panel" style="display: none;">
-      <p id="error-message"></p>
-      <button class="btn btn-small" id="retry-btn">Retry</button>
+    <!-- Error Message -->
+    <div class="error-box" id="error-box" style="display: none;">
+      <p class="error-message" id="error-message"></p>
+      <p class="error-hint" id="error-hint"></p>
     </div>
 
     <!-- Main Content -->
-    <main class="main" id="main-content">
+    <main class="main" id="main-content" style="display: none;">
+      <!-- Composition Info -->
+      <section class="section">
+        <div class="comp-info">
+          <span class="comp-name" id="comp-name">—</span>
+          <span class="timeline-name" id="timeline-name"></span>
+        </div>
+      </section>
+
       <!-- Tool Selection -->
       <section class="section">
         <label class="label">Tool</label>
@@ -36,54 +44,28 @@
 
       <!-- Input Selection -->
       <section class="section" id="input-section" style="display: none;">
-        <label class="label">Input</label>
+        <label class="label">Animated Input</label>
         <select class="select" id="input-select">
           <option value="">Select an input...</option>
         </select>
+        <p class="help-text" id="no-keyframes-hint" style="display: none;">
+          No animated inputs on this tool
+        </p>
       </section>
 
-      <!-- Easing Controls -->
-      <section class="section easing-section" id="easing-section" style="display: none;">
-        <!-- Curve Preview -->
-        <div class="preview">
-          <canvas id="curve-canvas" width="200" height="120"></canvas>
+      <!-- Keyframes Display -->
+      <section class="section" id="keyframes-section" style="display: none;">
+        <label class="label">Keyframes</label>
+        <div class="keyframes-list" id="keyframes-list">
+          <!-- Populated by JS -->
         </div>
-
-        <!-- In/Out Sliders (like Keyframe Wingman) -->
-        <div class="sliders">
-          <div class="slider-group">
-            <label class="slider-label">
-              <span>In</span>
-              <span class="slider-value" id="in-value">50</span>
-            </label>
-            <input type="range" class="slider" id="in-slider" min="1" max="100" value="50">
-          </div>
-
-          <div class="slider-group">
-            <label class="slider-label">
-              <span>Out</span>
-              <span class="slider-value" id="out-value">50</span>
-            </label>
-            <input type="range" class="slider" id="out-slider" min="1" max="100" value="50">
-          </div>
-        </div>
-
-        <!-- Presets -->
-        <div class="presets">
-          <button class="preset-btn" data-in="1" data-out="100" title="Ease Out">⟨</button>
-          <button class="preset-btn" data-in="50" data-out="50" title="Ease In Out">◇</button>
-          <button class="preset-btn" data-in="100" data-out="1" title="Ease In">⟩</button>
-          <button class="preset-btn" data-in="1" data-out="1" title="Linear">—</button>
-        </div>
-
-        <!-- Apply Button -->
-        <button class="btn btn-primary" id="apply-btn">Apply Easing</button>
       </section>
     </main>
 
     <!-- Footer -->
     <footer class="footer">
-      <span class="comp-name" id="comp-name">—</span>
+      <button class="btn-refresh" id="refresh-btn" title="Refresh">↻ Refresh</button>
+      <span class="version">M1</span>
     </footer>
   </div>
 

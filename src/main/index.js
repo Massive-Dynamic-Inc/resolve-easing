@@ -1,7 +1,11 @@
 /**
  * Resolve Easing - Main Process
  * Electron-based Workflow Integration Plugin
+ * 
+ * Milestone 1: Connection & Detection
  */
+
+'use strict';
 
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
@@ -15,27 +19,20 @@ let mainWindow = null;
  */
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 400,
-    height: 600,
-    minWidth: 320,
+    width: 360,
+    height: 500,
+    minWidth: 300,
     minHeight: 400,
-    backgroundColor: '#1e1e1e',
+    useContentSize: true,
+    resizable: true,
     webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
       preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
     },
-    // Workflow Integration plugins are frameless
-    frame: false,
-    titleBarStyle: 'hidden',
   });
 
   mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
-
-  // Open DevTools in development
-  if (process.env.NODE_ENV === 'development') {
-    mainWindow.webContents.openDevTools({ mode: 'detach' });
-  }
 
   mainWindow.on('closed', () => {
     mainWindow = null;
@@ -46,9 +43,7 @@ function createWindow() {
 app.whenReady().then(createWindow);
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
+  app.quit();
 });
 
 app.on('activate', () => {
@@ -57,35 +52,70 @@ app.on('activate', () => {
   }
 });
 
-// IPC Handlers
+// ============ IPC Handlers ============
 
 /**
- * Get current composition info
+ * Get composition info
  */
-ipcMain.handle('get-comp', async () => {
+ipcMain.handle('get-comp-info', async () => {
   const result = await resolve.getCurrentComp();
+  
   if (result.error) {
-    return { error: result.error };
+    return {
+      connected: false,
+      error: result.error,
+      hint: result.hint || null,
+    };
   }
-  
-  // Get selected tools
-  const tools = await bridge.getSelectedTools(result.comp);
-  
+
   return {
+    connected: true,
     name: result.name,
     timeline: result.timeline,
-    tools,
   };
+});
+
+/**
+ * Get all tools in comp
+ */
+ipcMain.handle('get-all-tools', async () => {
+  const result = await resolve.getCurrentComp();
+  if (result.error) return { error: result.error, tools: [] };
+
+  const tools = await bridge.getAllTools(result.comp);
+  return { tools };
+});
+
+/**
+ * Get selected tools
+ */
+ipcMain.handle('get-selected-tools', async () => {
+  const result = await resolve.getCurrentComp();
+  if (result.error) return { error: result.error, tools: [] };
+
+  const tools = await bridge.getSelectedTools(result.comp);
+  return { tools };
 });
 
 /**
  * Get animated inputs for a tool
  */
-ipcMain.handle('get-inputs', async (event, toolName) => {
+ipcMain.handle('get-animated-inputs', async (event, toolName) => {
   const result = await resolve.getCurrentComp();
-  if (result.error) return { error: result.error };
-  
+  if (result.error) return { error: result.error, inputs: [] };
+
   const inputs = await bridge.getAnimatedInputs(result.comp, toolName);
+  return { inputs };
+});
+
+/**
+ * Get all inputs for a tool
+ */
+ipcMain.handle('get-all-inputs', async (event, toolName) => {
+  const result = await resolve.getCurrentComp();
+  if (result.error) return { error: result.error, inputs: [] };
+
+  const inputs = await bridge.getAllInputs(result.comp, toolName);
   return { inputs };
 });
 
@@ -94,33 +124,14 @@ ipcMain.handle('get-inputs', async (event, toolName) => {
  */
 ipcMain.handle('get-keyframes', async (event, toolName, inputName) => {
   const result = await resolve.getCurrentComp();
-  if (result.error) return { error: result.error };
-  
+  if (result.error) return { error: result.error, keyframes: [] };
+
   const keyframes = await bridge.getKeyframes(result.comp, toolName, inputName);
   return { keyframes };
 });
 
 /**
- * Apply easing to keyframes
- */
-ipcMain.handle('apply-easing', async (event, { toolName, inputName, inValue, outValue }) => {
-  const result = await resolve.getCurrentComp();
-  if (result.error) return { error: result.error };
-  
-  // Get current keyframes
-  const keyframes = await bridge.getKeyframes(result.comp, toolName, inputName);
-  if (keyframes.length < 2) {
-    return { error: 'Need at least 2 keyframes' };
-  }
-  
-  // TODO: Apply easing curve to keyframes
-  // This will modify the bezier handles between keyframes
-  
-  return { success: true, modified: keyframes.length };
-});
-
-/**
- * Refresh/reconnect to Resolve
+ * Refresh connection
  */
 ipcMain.handle('refresh', async () => {
   return await resolve.initialize();
