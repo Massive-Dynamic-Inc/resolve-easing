@@ -73,7 +73,7 @@ async function refresh() {
 }
 
 /**
- * Load tools into dropdown
+ * Load tools into dropdown and auto-select if one is selected in Fusion
  */
 async function loadTools() {
   toolSelect.innerHTML = '<option value="">Select a tool...</option>';
@@ -83,21 +83,33 @@ async function loadTools() {
   currentInput = null;
 
   try {
-    const result = await window.api.getAllTools();
+    // Get all tools and selected tools in parallel
+    const [allResult, selectedResult] = await Promise.all([
+      window.api.getAllTools(),
+      window.api.getSelectedTools()
+    ]);
     
-    if (result.error) {
-      console.error('Failed to load tools:', result.error);
+    if (allResult.error) {
+      console.error('Failed to load tools:', allResult.error);
       return;
     }
 
-    const tools = result.tools || [];
+    const tools = allResult.tools || [];
+    const selected = selectedResult.tools || [];
     
+    // Add all tools to dropdown
     tools.forEach(name => {
       const opt = document.createElement('option');
       opt.value = name;
       opt.textContent = name;
       toolSelect.appendChild(opt);
     });
+
+    // Auto-select first selected tool (if any)
+    if (selected.length > 0) {
+      toolSelect.value = selected[0];
+      await onToolChange(); // Load inputs for selected tool
+    }
 
   } catch (e) {
     console.error('Failed to load tools:', e);
