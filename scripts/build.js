@@ -61,5 +61,13 @@ const manifest = `<?xml version="1.0" encoding="UTF-8"?>
 </WorkflowIntegrationPluginManifest>`;
 fs.writeFileSync(path.join(DIST, 'manifest.xml'), manifest);
 
-console.log('\nBuild complete! Output: dist/resolve-easing/');
-console.log('Note: WorkflowIntegration.node must be added manually');
+// Copy WorkflowIntegration.node from Resolve SDK if available
+const workflowNode = '/Library/Application Support/Blackmagic Design/DaVinci Resolve/Developer/Workflow Integrations/Examples/SamplePlugin/WorkflowIntegration.node';
+if (fs.existsSync(workflowNode)) {
+  fs.copyFileSync(workflowNode, path.join(DIST, 'main/WorkflowIntegration.node'));
+  console.log('Copied: WorkflowIntegration.node from Resolve SDK');
+} else {
+  console.warn('⚠️  WorkflowIntegration.node not found - copy manually from Resolve SDK');
+}
+
+console.log('\n✅ Build complete! Output: dist/resolve-easing/');
