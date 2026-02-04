@@ -35,6 +35,9 @@ function createWindow() {
 
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
 
+  // Open DevTools for debugging (remove in production)
+  mainWindow.webContents.openDevTools({ mode: 'detach' });
+
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
@@ -81,9 +84,13 @@ ipcMain.handle('get-comp-info', async () => {
  */
 ipcMain.handle('get-all-tools', async () => {
   const result = await resolve.getCurrentComp();
-  if (result.error) return { error: result.error, tools: [] };
+  if (result.error) {
+    console.log('[get-all-tools] Error:', result.error);
+    return { error: result.error, tools: [] };
+  }
 
   const tools = await bridge.getAllTools(result.comp);
+  console.log('[get-all-tools] Found tools:', tools);
   return { tools };
 });
 
@@ -92,9 +99,13 @@ ipcMain.handle('get-all-tools', async () => {
  */
 ipcMain.handle('get-selected-tools', async () => {
   const result = await resolve.getCurrentComp();
-  if (result.error) return { error: result.error, tools: [] };
+  if (result.error) {
+    console.log('[get-selected-tools] Error:', result.error);
+    return { error: result.error, tools: [] };
+  }
 
   const tools = await bridge.getSelectedTools(result.comp);
+  console.log('[get-selected-tools] Selected:', tools);
   return { tools };
 });
 

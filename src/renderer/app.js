@@ -89,6 +89,9 @@ async function loadTools() {
       window.api.getSelectedTools()
     ]);
     
+    console.log('[loadTools] allResult:', allResult);
+    console.log('[loadTools] selectedResult:', selectedResult);
+    
     if (allResult.error) {
       console.error('Failed to load tools:', allResult.error);
       return;
@@ -96,6 +99,9 @@ async function loadTools() {
 
     const tools = allResult.tools || [];
     const selected = selectedResult.tools || [];
+    
+    console.log('[loadTools] tools:', tools);
+    console.log('[loadTools] selected:', selected);
     
     // Add all tools to dropdown
     tools.forEach(name => {
@@ -107,6 +113,7 @@ async function loadTools() {
 
     // Auto-select first selected tool (if any)
     if (selected.length > 0) {
+      console.log('[loadTools] Auto-selecting:', selected[0]);
       toolSelect.value = selected[0];
       await onToolChange(); // Load inputs for selected tool
     }
