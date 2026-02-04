@@ -140,12 +140,16 @@ async function getAnimatedInputs(comp, toolName) {
     local tool = comp:FindTool("${toolName}")
     if not tool then return "" end
     local inputs = {}
-    for name, inp in pairs(tool:GetInputList()) do
-      -- Skip expressions and connections
-      if not inp:GetExpression() and not inp:GetConnectedOutput() then
-        local kf = inp:GetKeyFrames()
-        if kf and #kf > 0 then
-          table.insert(inputs, name)
+    local inputList = tool:GetInputList()
+    for _, inp in pairs(inputList) do
+      local kf = inp:GetKeyFrames()
+      if kf and type(kf) == "table" then
+        local count = 0
+        for _ in pairs(kf) do count = count + 1 end
+        if count > 0 then
+          -- Get the input's ID/Name
+          local inputName = inp:GetAttrs().INPS_ID or inp.Name or "Unknown"
+          table.insert(inputs, inputName)
         end
       end
     end
@@ -184,14 +188,15 @@ async function getKeyframes(comp, toolName, inputName) {
     local tool = comp:FindTool("${toolName}")
     if not tool then return "[]" end
     local inp = nil
-    for name, i in pairs(tool:GetInputList()) do
-      if name == "${inputName}" then inp = i break end
+    for _, i in pairs(tool:GetInputList()) do
+      local id = i:GetAttrs().INPS_ID or i.Name or ""
+      if id == "${inputName}" then inp = i break end
     end
     if not inp then return "[]" end
     local kf = inp:GetKeyFrames()
-    if not kf then return "[]" end
+    if not kf or type(kf) ~= "table" then return "[]" end
     local result = {}
-    for i, frame in ipairs(kf) do
+    for _, frame in pairs(kf) do
       local val = inp[frame]
       -- Handle different value types
       local valStr

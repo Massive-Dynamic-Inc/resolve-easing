@@ -143,7 +143,9 @@ async function onToolChange() {
 
   // Load animated inputs
   try {
+    console.log('[onToolChange] Getting animated inputs for:', toolName);
     const result = await window.api.getAnimatedInputs(toolName);
+    console.log('[onToolChange] getAnimatedInputs result:', result);
     
     if (result.error) {
       console.error('Failed to load inputs:', result.error);
@@ -151,19 +153,24 @@ async function onToolChange() {
     }
 
     const inputs = result.inputs || [];
+    console.log('[onToolChange] inputs array:', inputs);
     
     inputSelect.innerHTML = '<option value="">Select an input...</option>';
     
+    console.log('[onToolChange] inputs.length:', inputs.length);
     if (inputs.length === 0) {
+      console.log('[onToolChange] No inputs - showing hint');
       inputSection.style.display = 'block';
       noKeyframesHint.style.display = 'block';
       inputSelect.disabled = true;
     } else {
+      console.log('[onToolChange] Found inputs - populating dropdown');
       inputSection.style.display = 'block';
       noKeyframesHint.style.display = 'none';
       inputSelect.disabled = false;
       
       inputs.forEach(name => {
+        console.log('[onToolChange] Adding option:', name);
         const opt = document.createElement('option');
         opt.value = name;
         opt.textContent = name;
